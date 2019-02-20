@@ -1,7 +1,7 @@
 import React, { createContext, useReducer, useContext } from 'react';
 import PropTypes from 'prop-types';
 
-import reducer, { initialState } from './reducer';
+import reducer, { initialState } from './messages/reducer';
 
 export const StoreContext = createContext({});
 
