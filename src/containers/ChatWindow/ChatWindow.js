@@ -79,15 +79,19 @@ const ChatWindow = ({ user, messagingUser }) => {
   };
 
   // New messages cycle
+  // useEffect(() => {
+  //   if (messages.length) {
+  //     if (messages[messages.length - 1].user === user || scrolledToBottom) {
+  //       scrollToBottom();
+  //     } else if (!scrolledToBottom) {
+  //       setNewMessages(newMessages + 1);
+  //     }
+  //   }
+  // }, [messages.length]);
+
   useEffect(() => {
     if (messages.length) {
-      const wrapper = document.querySelector(`.messages-wrapper__${user}`); // eslint-disable-line no-undef
-      if (messages[messages.length - 1].user === user || scrolledToBottom) {
-        setNewMessages(0);
-        wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
-      } else if (!scrolledToBottom) {
-        setNewMessages(newMessages + 1);
-      }
+      scrollToBottom();
     }
   }, [messages.length]);
 
@@ -115,7 +119,7 @@ const ChatWindow = ({ user, messagingUser }) => {
   const usersAreTyping = typingUsers.length > 1
     || (typingUsers.length === 1 && typingUsers[0] !== user);
 
-  if (usersAreTyping) scrollToBottom();
+  // if (usersAreTyping) scrollToBottom();
 
 
   const chatWindow = document.querySelector(`.chat-window__${user}`); // eslint-disable-line no-undef
