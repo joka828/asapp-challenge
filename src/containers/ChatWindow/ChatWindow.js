@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import moment from 'moment';
+import PropTypes from 'prop-types';
 
 import useDebouncedCallback from 'use-debounce/lib/callback';
 
@@ -58,71 +59,76 @@ const ChatWindow = ({ user, messagingUser }) => {
     typingActions.removeUser(user);
   }, 700);
 
+  const scrollToBottom = () => {
+    const wrapper = document.querySelector(`.messages-wrapper__${user}`); // eslint-disable-line no-undef
+    wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
+    // setNewMessages(0);
+  };
+
   const onMessagesScroll = (e) => {
     const { target } = e;
     if (target.scrollTop === target.scrollHeight - target.getBoundingClientRect().height) {
-      ReactDOM.unstable_batchedUpdates(() => {
-        setScrolledToBottom(true);
-        setNewMessages(0);
-      });
+      // ReactDOM.unstable_batchedUpdates(() => {
+      //   setScrolledToBottom(true);
+      //   setNewMessages(0);
+      // });
+      setScrolledToBottom(true);
+      setNewMessages(0);
     } else if (scrolledToBottom) {
       setScrolledToBottom(false);
     }
   };
 
-
   // New messages cycle
   useEffect(() => {
-    // eslint-disable-next-line no-undef
-    const wrapper = document.querySelector(`.messages-wrapper__${user}`);
     if (messages.length) {
+      const wrapper = document.querySelector(`.messages-wrapper__${user}`); // eslint-disable-line no-undef
+      console.log(scrolledToBottom);
       if (messages[messages.length - 1].user === user || scrolledToBottom) {
-        wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
         setNewMessages(0);
+        wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
       } else if (!scrolledToBottom) {
         setNewMessages(newMessages + 1);
       }
     }
   }, [messages.length]);
 
-  const onKeyDown = (e) => {
+  const onInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const onInputKeyDown = (e) => {
     if (e.key === 'Enter' && e.target.value.length > 0) {
       setInputValue('');
       messagesActions.addMessage(e.target.value, user, new Date().toISOString());
       typingActions.removeUser(user);
-    } else {
+    } else if (e.key !== 'space') {
       typingActions.addUser(user);
+      scrollToBottom();
     }
   };
 
-  const onKeyUp = (e) => {
+  const onInputKeyUp = (e) => {
     if (e.key !== 'Enter') {
       stopTyping();
-    }
-  };
-
-  const scrollToBottom = () => {
-    const wrapper = document.querySelector(`.messages-wrapper__${user}`);
-    if (messages.length) {
-      if (messages[messages.length - 1].user === user || scrolledToBottom) {
-        wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
-        setNewMessages(0);
-      } else if (!scrolledToBottom) {
-        setNewMessages(newMessages + 1);
-      }
     }
   };
 
   const usersAreTyping = typingUsers.length > 1
     || (typingUsers.length === 1 && typingUsers[0] !== user);
 
-  // eslint-disable-next-line no-undef
-  const chatWindow = document.querySelector(`.chat-window__${user}`);
+  if (usersAreTyping) scrollToBottom();
+
+
+  const chatWindow = document.querySelector(`.chat-window__${user}`); // eslint-disable-line no-undef
 
   return (
     <ChatBox className={`chat-window__${user}`} key={user}>
       {!!newMessages && (
-        <NewMessagesNotification onClick={scrollToBottom} left={chatWindow.getBoundingClientRect().width / 2}>
+        <NewMessagesNotification
+          onClick={scrollToBottom}
+          left={chatWindow.getBoundingClientRect().width / 2}
+        >
           {newMessages}
           {' '}
           new message
@@ -145,18 +151,23 @@ const ChatWindow = ({ user, messagingUser }) => {
             </MessageRow>
           ),
         )}
-        {usersAreTyping && (<MessageRow key="typing" self={false}>Typing</MessageRow>)}
+        {usersAreTyping && (<MessageRow key="typing" self={false}>Typing...</MessageRow>)}
       </MessagesWrapper>
       <StyledInput
         type="text"
         value={inputValue}
-        onChange={(e) => { setInputValue(e.target.value); }}
-        onKeyDown={onKeyDown}
-        onKeyUp={onKeyUp}
+        onChange={onInputChange}
+        onKeyDown={onInputKeyDown}
+        onKeyUp={onInputKeyUp}
         placeholder="Type your message..."
       />
     </ChatBox>
   );
+};
+
+ChatWindow.propTypes = {
+  user: PropTypes.string.isRequired,
+  messagingUser: PropTypes.string.isRequired,
 };
 
 export default ChatWindow;

@@ -11,7 +11,6 @@ export const TypingContext = ({ children }) => {
   const addUser = (user) => {
     const userIndex = state.indexOf(user);
     if (userIndex < 0) {
-      console.log('ADD', user);
       dispatch({
         type: 'UPDATE_USERS',
         users: state.concat(user),
