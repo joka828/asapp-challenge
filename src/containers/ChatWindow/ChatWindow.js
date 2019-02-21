@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import moment from 'moment';
 import PropTypes from 'prop-types';
@@ -62,7 +61,7 @@ const ChatWindow = ({ user, messagingUser }) => {
   const scrollToBottom = () => {
     const wrapper = document.querySelector(`.messages-wrapper__${user}`); // eslint-disable-line no-undef
     wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
-    // setNewMessages(0);
+    setNewMessages(0);
   };
 
   const onMessagesScroll = (e) => {
@@ -83,7 +82,6 @@ const ChatWindow = ({ user, messagingUser }) => {
   useEffect(() => {
     if (messages.length) {
       const wrapper = document.querySelector(`.messages-wrapper__${user}`); // eslint-disable-line no-undef
-      console.log(scrolledToBottom);
       if (messages[messages.length - 1].user === user || scrolledToBottom) {
         setNewMessages(0);
         wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
