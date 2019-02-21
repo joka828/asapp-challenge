@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import { debounce } from 'lodash';
 import moment from 'moment';
+
+import useDebouncedCallback from 'use-debounce/lib/callback';
 
 import ChatBox from '../../components/ChatBox';
 import MessageRow from '../../components/MessageRow';
@@ -13,6 +14,7 @@ import useTyping from '../../state/typing/hook';
 
 const NewMessagesNotification = styled.div`
   position: absolute;
+  cursor: pointer;
   left:${({ left }) => (left || 0)}px;
   top: 32px;
   padding: 8px;
@@ -45,20 +47,16 @@ const StyledInput = styled.input`
   outline: none;
 `;
 
-const stopTyping = debounce(
-  (user, removeTypingUser, forceUpdate) => { removeTypingUser(user); forceUpdate(); },
-  1200,
-  { trailing: true },
-);
-
-
 const ChatWindow = ({ user, messagingUser }) => {
   const [messages, messagesActions] = useMessages();
   const [typingUsers, typingActions] = useTyping();
   const [inputValue, setInputValue] = useState('');
   const [newMessages, setNewMessages] = useState(0);
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
-  const [, forceUpdate] = useState();
+
+  const stopTyping = useDebouncedCallback(() => {
+    typingActions.removeUser(user);
+  }, 700);
 
   const onMessagesScroll = (e) => {
     const { target } = e;
@@ -72,19 +70,11 @@ const ChatWindow = ({ user, messagingUser }) => {
     }
   };
 
-  // console.log('TYPING', typingUsers);
 
-  // Typing cycle
-  useEffect(() => {
-    // console.log('USE EFFECT', user, typingUsers);
-  }, [typingUsers.length]);
-
-
-  // Messages cycle
+  // New messages cycle
   useEffect(() => {
     // eslint-disable-next-line no-undef
     const wrapper = document.querySelector(`.messages-wrapper__${user}`);
-
     if (messages.length) {
       if (messages[messages.length - 1].user === user || scrolledToBottom) {
         wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
@@ -106,8 +96,21 @@ const ChatWindow = ({ user, messagingUser }) => {
   };
 
   const onKeyUp = (e) => {
-    if (e.key !== 'Enter') stopTyping(user, typingActions.removeUser, forceUpdate);
-    // typingActions.removeUser(user);
+    if (e.key !== 'Enter') {
+      stopTyping();
+    }
+  };
+
+  const scrollToBottom = () => {
+    const wrapper = document.querySelector(`.messages-wrapper__${user}`);
+    if (messages.length) {
+      if (messages[messages.length - 1].user === user || scrolledToBottom) {
+        wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
+        setNewMessages(0);
+      } else if (!scrolledToBottom) {
+        setNewMessages(newMessages + 1);
+      }
+    }
   };
 
   const usersAreTyping = typingUsers.length > 1
@@ -119,14 +122,16 @@ const ChatWindow = ({ user, messagingUser }) => {
   return (
     <ChatBox className={`chat-window__${user}`} key={user}>
       {!!newMessages && (
-        <NewMessagesNotification left={chatWindow.getBoundingClientRect().width / 2}>
+        <NewMessagesNotification onClick={scrollToBottom} left={chatWindow.getBoundingClientRect().width / 2}>
           {newMessages}
           {' '}
           new message
           {newMessages > 1 && 's'}
         </NewMessagesNotification>
       )}
-      <ChatHeader>{messagingUser}</ChatHeader>
+      <ChatHeader>
+        {messagingUser}
+      </ChatHeader>
       <MessagesWrapper className={`messages-wrapper__${user}`} onScroll={onMessagesScroll}>
         {messages.map(
           message => (

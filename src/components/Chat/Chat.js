@@ -4,7 +4,7 @@ const Chat = styled.div`
   display: flex;
   width: 100%;
   min-height: 100vh;
-  background-color: black;
+  background-color: #726259;
   box-sizing: border-box;
   padding: 16px 0;
 `;
