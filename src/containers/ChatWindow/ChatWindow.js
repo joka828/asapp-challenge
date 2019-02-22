@@ -47,6 +47,8 @@ const StyledInput = styled.input`
   outline: none;
 `;
 
+const scrollBottomThreshold = 20;
+
 const ChatWindow = ({ user, messagingUser }) => {
   const [messages, messagesActions] = useMessages();
   const [typingUsers, typingActions] = useTyping();
@@ -66,7 +68,7 @@ const ChatWindow = ({ user, messagingUser }) => {
 
   const onMessagesScroll = (e) => {
     const { target } = e;
-    if (target.scrollTop === target.scrollHeight - target.getBoundingClientRect().height) {
+    if (target.scrollTop >= target.scrollHeight - target.getBoundingClientRect().height - 20) {
       // ReactDOM.unstable_batchedUpdates(() => {
       //   setScrolledToBottom(true);
       //   setNewMessages(0);
@@ -79,19 +81,13 @@ const ChatWindow = ({ user, messagingUser }) => {
   };
 
   // New messages cycle
-  // useEffect(() => {
-  //   if (messages.length) {
-  //     if (messages[messages.length - 1].user === user || scrolledToBottom) {
-  //       scrollToBottom();
-  //     } else if (!scrolledToBottom) {
-  //       setNewMessages(newMessages + 1);
-  //     }
-  //   }
-  // }, [messages.length]);
-
   useEffect(() => {
     if (messages.length) {
-      scrollToBottom();
+      if (messages[messages.length - 1].user === user || scrolledToBottom) {
+        scrollToBottom();
+      } else if (!scrolledToBottom) {
+        setNewMessages(newMessages + 1);
+      }
     }
   }, [messages.length]);
 
@@ -120,6 +116,10 @@ const ChatWindow = ({ user, messagingUser }) => {
     || (typingUsers.length === 1 && typingUsers[0] !== user);
 
   // if (usersAreTyping) scrollToBottom();
+
+  useEffect(() => {
+    if (usersAreTyping && scrolledToBottom) scrollToBottom();
+  }, [typingUsers.length]);
 
 
   const chatWindow = document.querySelector(`.chat-window__${user}`); // eslint-disable-line no-undef
