@@ -25,7 +25,11 @@ const reducer = (state, action) => {
       return newState;
 
     case 'LOAD_MESSAGES':
-      return JSON.parse(localStorage.getItem('messages') || []);
+      const messagesString = localStorage.getItem('messages');
+      if (messagesString && messagesString.length) {
+        return JSON.parse(messagesString);
+      }
+      return [];
 
     case 'CLEAR_MESSAGES':
       localStorage.clear();
