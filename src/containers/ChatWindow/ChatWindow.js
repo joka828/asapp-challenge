@@ -47,8 +47,6 @@ const StyledInput = styled.input`
   outline: none;
 `;
 
-const scrollBottomThreshold = 20;
-
 const ChatWindow = ({ user, messagingUser }) => {
   const [messages, messagesActions] = useMessages();
   const [typingUsers, typingActions] = useTyping();
