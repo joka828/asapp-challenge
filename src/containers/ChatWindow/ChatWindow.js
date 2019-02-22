@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import useDebouncedCallback from 'use-debounce/lib/callback';
 
 import ChatBox from '../../components/ChatBox';
+import ChatHeader from '../../components/ChatHeader';
 import MessageRow from '../../components/MessageRow';
 import MessagesWrapper from '../../components/MessagesWrapper';
 
@@ -30,13 +31,13 @@ const NewMessagesNotification = styled.div`
   }
 `;
 
-const ChatHeader = styled.div`
-  display: flex;
-  justify-content: center;
-  padding: 8px;
-  background-color: #ffd0ad;
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
+const ClearChatsButton = styled.button`
+  background-color: #e57137;
+  border: 0;
+  border-radius: 12px;
+  margin-right: 6px;
+  outline: none;
+  cursor: pointer;
 `;
 
 const StyledInput = styled.input`
@@ -54,14 +55,36 @@ const ChatWindow = ({ user, messagingUser }) => {
   const [newMessages, setNewMessages] = useState(0);
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
 
-  const stopTyping = useDebouncedCallback(() => {
-    typingActions.removeUser(user);
-  }, 700);
 
   const scrollToBottom = () => {
     const wrapper = document.querySelector(`.messages-wrapper__${user}`); // eslint-disable-line no-undef
     wrapper.scrollTop = wrapper.scrollHeight - wrapper.getBoundingClientRect().height;
     setNewMessages(0);
+  };
+
+  const stopTyping = useDebouncedCallback(() => {
+    typingActions.removeUser(user);
+  }, 700);
+
+  const usersAreTyping = typingUsers.length > 1
+    || (typingUsers.length === 1 && typingUsers[0] !== user);
+
+  useEffect(() => {
+    if (messages && messages.length) {
+      if (messages[messages.length - 1].user === user || scrolledToBottom) {
+        scrollToBottom();
+      } else if (!scrolledToBottom) {
+        setNewMessages(newMessages + 1);
+      }
+    }
+  }, [messages.length]);
+
+  useEffect(() => {
+    if (usersAreTyping && scrolledToBottom) scrollToBottom();
+  }, [typingUsers.length]);
+
+  const onClearChatClick = () => {
+    messagesActions.clearMessages();
   };
 
   const onMessagesScroll = (e) => {
@@ -77,17 +100,6 @@ const ChatWindow = ({ user, messagingUser }) => {
       setScrolledToBottom(false);
     }
   };
-
-  // New messages cycle
-  useEffect(() => {
-    if (messages.length) {
-      if (messages[messages.length - 1].user === user || scrolledToBottom) {
-        scrollToBottom();
-      } else if (!scrolledToBottom) {
-        setNewMessages(newMessages + 1);
-      }
-    }
-  }, [messages.length]);
 
   const onInputChange = (e) => {
     setInputValue(e.target.value);
@@ -110,16 +122,6 @@ const ChatWindow = ({ user, messagingUser }) => {
     }
   };
 
-  const usersAreTyping = typingUsers.length > 1
-    || (typingUsers.length === 1 && typingUsers[0] !== user);
-
-  // if (usersAreTyping) scrollToBottom();
-
-  useEffect(() => {
-    if (usersAreTyping && scrolledToBottom) scrollToBottom();
-  }, [typingUsers.length]);
-
-
   const chatWindow = document.querySelector(`.chat-window__${user}`); // eslint-disable-line no-undef
 
   return (
@@ -136,6 +138,7 @@ const ChatWindow = ({ user, messagingUser }) => {
         </NewMessagesNotification>
       )}
       <ChatHeader>
+        <ClearChatsButton onClick={onClearChatClick}>Clear Chats</ClearChatsButton>
         {messagingUser}
       </ChatHeader>
       <MessagesWrapper className={`messages-wrapper__${user}`} onScroll={onMessagesScroll}>

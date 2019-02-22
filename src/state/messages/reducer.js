@@ -1,63 +1,36 @@
-import uniqid from 'uniqid';
+import localStorage from 'localStorage';
 
 export const initialState = [];
 
-// const mockMessage = id => ({
-//   id,
-//   text: 'asd',
-//   time: new Date(),
-//   user: 'Rob',
-// });
-//
-// export const initialState = [
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-//   mockMessage(uniqid()),
-// ];
+const saveToLocalStorage = (messages) => {
+  localStorage.setItem('messages', JSON.stringify(messages));
+};
 
 const reducer = (state, action) => {
   switch (action.type) {
     case 'ADD_MESSAGE':
-      const { text, user, time } = action;
-      return [
+      const {
+        text, user, time, id,
+      } = action;
+      const newState = [
         ...state,
         {
-          id: uniqid(),
+          id,
           text,
           user,
           time,
         },
       ];
+      saveToLocalStorage(newState);
+      return newState;
+
+    case 'LOAD_MESSAGES':
+      return JSON.parse(localStorage.getItem('messages') || []);
+
+    case 'CLEAR_MESSAGES':
+      localStorage.clear();
+      return [];
+
     default:
       throw new Error('Invalid action type');
   }

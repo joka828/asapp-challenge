@@ -1,6 +1,8 @@
 import React, { createContext, useReducer, useContext } from 'react';
 import PropTypes from 'prop-types';
 
+import uniqid from 'uniqid';
+
 import reducer, { initialState } from './reducer';
 
 export const StoreContext = createContext({});
@@ -11,9 +13,22 @@ export const MessagesContext = ({ children }) => {
   const addMessage = (text, user, time) => {
     dispatch({
       type: 'ADD_MESSAGE',
+      id: uniqid(),
       text,
       user,
       time,
+    });
+  };
+
+  const loadMessages = () => {
+    dispatch({
+      type: 'LOAD_MESSAGES',
+    });
+  };
+
+  const clearMessages = () => {
+    dispatch({
+      type: 'CLEAR_MESSAGES',
     });
   };
 
@@ -23,6 +38,8 @@ export const MessagesContext = ({ children }) => {
         state,
         {
           addMessage,
+          loadMessages,
+          clearMessages,
         },
       ]}
     >
